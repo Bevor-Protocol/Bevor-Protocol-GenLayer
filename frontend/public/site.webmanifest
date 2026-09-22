@@ -1,0 +1,15 @@
+{
+  "name": "Bevor Protocol",
+  "short_name": "Bevor",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030303",
+  "theme_color": "#030303",
+  "icons": [
+    {
+      "src": "/bevor-logo.png",
+      "type": "image/png",
+      "sizes": "any"
+    }
+  ]
+}

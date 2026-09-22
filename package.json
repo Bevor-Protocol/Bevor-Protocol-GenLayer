@@ -1,0 +1,35 @@
+{
+  "name": "bevor-protocol-genlayer",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd frontend && npm run start",
+    "lint": "cd frontend && npm run lint",
+    "deploy:governor": "genlayer deploy --contract contracts/bevor_governor.py",
+    "deploy:protocol": "genlayer deploy --contract contracts/bevor_protocol.py",
+    "test:frontend": "npm run test --workspace=frontend",
+    "test:browser": "npm run test:browser --workspace=frontend",
+    "local": "node scripts/localnet.mjs start",
+    "local:setup": "node scripts/localnet.mjs setup",
+    "local:stop": "node scripts/localnet.mjs stop",
+    "local:logs": "node scripts/localnet.mjs logs",
+    "local:wallets": "node scripts/localnet.mjs wallets",
+    "local:smoke": "node scripts/localnet.mjs smoke",
+    "local:seed": "node scripts/localnet.mjs seed",
+    "local:governance": "node scripts/localnet.mjs governance",
+    "test:startup": "node --test tests/startup/*.test.mjs"
+  },
+  "devDependencies": {
+    "genlayer-js": "^1.1.8",
+    "viem": "2.21.54"
+  },
+  "description": "Bevor Protocol audit payment vesting and liability decisions on GenLayer.",
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,111 @@
+name: bevor-genlayer
+
+x-backend: &backend
+  DBHOST: postgres
+  DBPORT: "5432"
+  DBNAME: genlayer_state
+  DBUSER: postgres
+  DBPASSWORD: bevor-local-only
+  REDIS_URL: redis://redis:6379/0
+  GENVMROOT: /genvm
+  GENVM_BIN: /genvm/bin
+  GENLAYER_CHAIN_ID: "61127"
+  CONSENSUS_CONTRACT_ADDRESS: "0xb7278A61aa25c888815aFC32Ad3cC52fF24fE575"
+  RPCPORT: "4000"
+  JSONRPC_SERVER_URL: http://jsonrpc:4000
+  WEBDRIVERHOST: webdriver
+  WEBDRIVERPORT: "5001"
+  # Studio uses the Web3 object for signature decoding even without Hardhat.
+  HARDHAT_URL: http://hardhat
+  HARDHAT_PORT: "8545"
+  PYTHONUNBUFFERED: "1"
+  LOG_LEVEL: info
+  LOGCONFIG: dev
+  VITE_IS_HOSTED: "false"
+  VITE_FINALITY_WINDOW: "5"
+  VITE_FINALITY_WINDOW_APPEAL_FAILED_REDUCTION: "0.2"
+  VITE_MAX_ROTATIONS: "3"
+  DEFAULT_NUM_INITIAL_VALIDATORS: "5"
+  DEFAULT_CONSENSUS_MAX_ROTATIONS: "3"
+  RATE_LIMIT_ENABLED: "false"
+  VALIDATORS_CONFIG_JSON: '[{"stake":100,"provider":"openai","model":"gpt-4o","amount":5}]'
+  OPENAIKEY: ${OPENAIKEY:-}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: bevor-local-only
+      POSTGRES_DB: genlayer_state
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres -d genlayer_state]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  redis:
+    image: redis:8-alpine
+    volumes: [redis_data:/data]
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+  webdriver:
+    image: yeagerai/genlayer-genvm-webdriver:0.0.9
+    environment: { PORT: "5001" }
+    shm_size: 1gb
+  database-migration:
+    image: yeagerai/simulator-database-migration:v0.121.6
+    environment: *backend
+    depends_on:
+      postgres: { condition: service_healthy }
+  jsonrpc:
+    image: bevor-studio-jsonrpc:v0.121.6
+    build:
+      context: ./compat
+      args:
+        BASE_IMAGE: yeagerai/simulator-jsonrpc:v0.121.6
+        APP_USER: backend-user
+    volumes: [genvm_cache:/genvm-cache]
+    environment: *backend
+    ports: ["127.0.0.1:${BEVOR_RPC_PORT:-4010}:4000"]
+    depends_on:
+      database-migration: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+      webdriver: { condition: service_started }
+    healthcheck:
+      test: [CMD, curl, -f, http://localhost:4000/health]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 120s
+  consensus-worker:
+    image: bevor-studio-consensus-worker:v0.121.6
+    build:
+      context: ./compat
+      args:
+        BASE_IMAGE: yeagerai/simulator-consensus-worker:v0.121.6
+        APP_USER: worker-user
+    volumes: [genvm_cache:/genvm-cache]
+    environment:
+      <<: *backend
+      WORKER_PORT: "4001"
+      WORKER_POLL_INTERVAL: "1"
+      MAX_PARALLEL_TXS_PER_WORKER: "1"
+    depends_on:
+      jsonrpc: { condition: service_healthy }
+    healthcheck:
+      test: [CMD, curl, -f, http://localhost:4001/health]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 120s
+
+volumes:
+  postgres_data:
+  redis_data:
+  genvm_cache:
