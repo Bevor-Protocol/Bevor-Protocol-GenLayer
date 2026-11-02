@@ -3,16 +3,13 @@
 import hashlib
 import json
 from datetime import datetime
+
 from genlayer import *
 from genlayer.py.public_abi import StorageType
 
 
 def _now() -> int:
-    return int(
-        datetime.fromisoformat(
-            gl.message_raw["datetime"].replace("Z", "+00:00")
-        ).timestamp()
-    )
+    return int(datetime.fromisoformat(gl.message_raw["datetime"].replace("Z", "+00:00")).timestamp())
 
 
 def _parse_result(raw: dict | str, sources: list[dict]) -> dict:
@@ -25,9 +22,7 @@ def _parse_result(raw: dict | str, sources: list[dict]) -> dict:
         except (ValueError, TypeError):
             raise gl.vm.UserError("[LLM_ERROR] Invalid decision JSON")
     fields = ("hack_occurred", "within_scope", "auditor_liable")
-    if not isinstance(raw, dict) or any(
-        raw.get(f) not in ("yes", "no", "unknown") for f in fields
-    ):
+    if not isinstance(raw, dict) or any(raw.get(f) not in ("yes", "no", "unknown") for f in fields):
         raise gl.vm.UserError("[LLM_ERROR] Invalid decision fields")
     rationale = raw.get("rationale")
     if not isinstance(rationale, str) or not 1 <= len(rationale.strip()) <= 6000:
@@ -66,14 +61,10 @@ def _parse_result(raw: dict | str, sources: list[dict]) -> dict:
             or not 20 <= len(quote) <= 1000
             or quote not in source_text[url]
         ):
-            raise gl.vm.UserError(
-                "[LLM_ERROR] Citation does not match fetched evidence"
-            )
+            raise gl.vm.UserError("[LLM_ERROR] Citation does not match fetched evidence")
         verified_citations.append({"url": url, "quote": quote})
     if verdict != "inconclusive" and not citations:
-        raise gl.vm.UserError(
-            "[LLM_ERROR] A conclusive decision requires cited evidence"
-        )
+        raise gl.vm.UserError("[LLM_ERROR] A conclusive decision requires cited evidence")
     return {
         **{f: raw[f] for f in fields},
         "verdict": verdict,
@@ -153,9 +144,7 @@ EVIDENCE_BUNDLE_JSON:
         },
         sort_keys=True,
     )
-    decision = _parse_result(
-        gl.nondet.exec_prompt(prompt, response_format="json"), sources
-    )
+    decision = _parse_result(gl.nondet.exec_prompt(prompt, response_format="json"), sources)
     decision["evidence_hashes"] = [
         {"url": s["url"], "sha256": s["sha256"], "error": s["error"]} for s in sources
     ]

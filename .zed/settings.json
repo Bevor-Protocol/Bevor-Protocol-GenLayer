@@ -1,0 +1,76 @@
+// Folder-specific settings
+//
+// For a full list of overridable settings, and general information on folder-specific settings,
+// see the documentation: https://zed.dev/docs/configuring-zed#settings-files
+{
+	"languages": {
+		"Python": {
+			"language_servers": ["ty", "ruff", "!basedpyright"],
+			"format_on_save": "on",
+			"formatter": [{ "language_server": { "name": "ruff" } }],
+			"code_actions_on_format": {
+				"source.fixAll.ruff": true,
+				"source.organizeImports.ruff": true
+			},
+			"tab_size": 4
+		},
+		"JSON": {
+			"format_on_save": "on",
+			"formatter": [{ "language_server": { "name": "biome" } }],
+			"language_servers": ["biome", "..."],
+			"code_actions_on_format": { "source.fixAll.biome": true }
+		},
+		"JSONC": {
+			"format_on_save": "on",
+			"formatter": [{ "language_server": { "name": "biome" } }],
+			"language_servers": ["biome", "..."],
+			"code_actions_on_format": { "source.fixAll.biome": true }
+		},
+		"YAML": {
+			"format_on_save": "on",
+			"formatter": [{ "language_server": { "name": "biome" } }],
+			"language_servers": ["biome", "..."]
+		},
+		"TypeScript": {
+			"format_on_save": "on",
+			"formatter": [{ "language_server": { "name": "biome" } }],
+			"language_servers": ["biome", "vtsls", "tailwindcss-language-server"],
+			"code_actions_on_format": {
+				"source.fixAll.biome": true
+			}
+		},
+		"JavaScript": {
+			"format_on_save": "on",
+			"formatter": [{ "language_server": { "name": "biome" } }],
+			"language_servers": ["biome", "vtsls", "tailwindcss-language-server"],
+			"code_actions_on_format": {
+				"source.fixAll.biome": true
+			}
+		}
+	},
+	"lsp": {
+		"ruff": {
+			"initialization_options": {
+				"settings": {
+					"configuration": "./ruff.toml"
+				}
+			}
+		},
+		"ty": {
+			"settings": {
+				"configurationFile": "./ty.toml",
+				"completions": {
+					"autoImport": true
+				}
+			}
+		},
+		"biome": {
+			"settings": {
+				"configurationFile": "./biome.json",
+				"completions": {
+					"autoImport": true
+				}
+			}
+		}
+	}
+}

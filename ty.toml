@@ -1,0 +1,8 @@
+[environment]
+python-version = "3.12"
+python = "./.venv"
+root = ["contracts"]
+extra-paths = [
+  "/Users/petersimone/.cache/genvm-linter/extracted/genlayerlabs-genvm-manager-v0.6.0-rc10/py-lib-genlayer-std/11rhn002yfajawsz7fai6mykznbxkxs6l91iskj5cm82c92qhy3v",
+  "/Users/petersimone/.cache/genvm-linter/extracted/genlayerlabs-genvm-manager-v0.6.0-rc10/py-lib-protobuf/g626etbaad7a3zqdp7wqd7d5k0ywdphjkdxk9rg8abhx2ggmv8e0/src",
+]

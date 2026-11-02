@@ -1,0 +1,70 @@
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    "*ipynb",
+    "./services/rust_contracts"
+]
+
+# Same as Black.
+line-length = 102
+indent-width = 4
+
+# Apply unsafe fixes (e.g. F401 in `__init__.py`); pair with `[lint].preview`.
+unsafe-fixes = true
+
+# Assume Python 3.12
+target-version = "py312"
+
+[lint]
+# Enable Pyflakes (`F`), a subset of the pycodestyle (`E`) codes, and isort (`I`) by default.
+select = ["E4", "E7", "E9", "F", "I"]
+ignore = ["E701", "E741", "F405", "F403"]
+
+# Unused-import fixes in `__init__.py` are preview-only; removing stdlib/third-party imports is
+# "unsafe" (may change a package's public surface). Needed for on-save / `ruff check --fix` to apply.
+preview = true
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
