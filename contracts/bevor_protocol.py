@@ -1,10 +1,11 @@
-# { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
+# { "Depends": "py-genlayer:11rhn002yfajawsz7fai6mykznbxkxs6l91iskj5cm82c92qhy3v" }
 
 import hashlib
 import json
 from dataclasses import dataclass
 from datetime import datetime
 from urllib.parse import urlparse
+
 from genlayer import *
 
 
@@ -39,11 +40,7 @@ class Audit:
 
 
 def _now() -> int:
-    return int(
-        datetime.fromisoformat(
-            gl.message_raw["datetime"].replace("Z", "+00:00")
-        ).timestamp()
-    )
+    return int(datetime.fromisoformat(gl.message_raw["datetime"].replace("Z", "+00:00")).timestamp())
 
 
 def _text(value: str, label: str, limit: int) -> None:
@@ -92,9 +89,7 @@ class BevorProtocol(gl.Contract):
         elapsed = max(0, timestamp - int(audit.start))
         if elapsed < audit.cliff:
             return 0
-        return (
-            int(audit.amount) * min(elapsed, int(audit.duration)) // int(audit.duration)
-        )
+        return int(audit.amount) * min(elapsed, int(audit.duration)) // int(audit.duration)
 
     def _pay(self, recipient: Address, amount: int) -> None:
         if amount > 0:
@@ -106,9 +101,7 @@ class BevorProtocol(gl.Contract):
     ) -> str:
         auditor_address = Address(auditor)
         if auditor_address in (gl.message.sender_address, Address("0x" + "00" * 20)):
-            raise gl.vm.UserError(
-                "Client and auditor must be distinct nonzero addresses"
-            )
+            raise gl.vm.UserError("Client and auditor must be distinct nonzero addresses")
         if (
             not 1 <= duration_seconds <= 10 * 365 * 86400
             or not 0 <= cliff_seconds <= duration_seconds
@@ -194,9 +187,7 @@ class BevorProtocol(gl.Contract):
         self._pay(audit.auditor, amount)
 
     @gl.public.write
-    def open_claim(
-        self, audit_id: str, allegation: str, evidence_urls: list[str]
-    ) -> str:
+    def open_claim(self, audit_id: str, allegation: str, evidence_urls: list[str]) -> str:
         audit = self._audit(audit_id)
         if gl.message.sender_address != audit.client:
             raise gl.vm.UserError("Only the client can open a claim")
@@ -207,12 +198,8 @@ class BevorProtocol(gl.Contract):
             raise gl.vm.UserError("The vesting period has ended")
         _text(allegation, "allegation", 12000)
         _sources(evidence_urls)
-        claim = json.dumps(
-            {"allegation": allegation, "evidence_urls": evidence_urls}, sort_keys=True
-        )
-        claim_id = hashlib.sha256(
-            (audit_id + ":" + str(now) + ":" + claim).encode()
-        ).hexdigest()
+        claim = json.dumps({"allegation": allegation, "evidence_urls": evidence_urls}, sort_keys=True)
+        claim_id = hashlib.sha256((audit_id + ":" + str(now) + ":" + claim).encode()).hexdigest()
         audit.claim = claim
         audit.claim_id = claim_id
         audit.claim_opened = u256(now)
@@ -221,20 +208,12 @@ class BevorProtocol(gl.Contract):
         return claim_id
 
     @gl.public.write
-    def submit_response(
-        self, audit_id: str, response: str, evidence_urls: list[str]
-    ) -> None:
+    def submit_response(self, audit_id: str, response: str, evidence_urls: list[str]) -> None:
         audit = self._audit(audit_id)
         if gl.message.sender_address != audit.auditor:
             raise gl.vm.UserError("Only the auditor can respond")
-        if (
-            audit.state != "disputed"
-            or audit.response
-            or _now() >= int(audit.claim_opened) + 86400
-        ):
-            raise gl.vm.UserError(
-                "The response window is closed or a response already exists"
-            )
+        if audit.state != "disputed" or audit.response or _now() >= int(audit.claim_opened) + 86400:
+            raise gl.vm.UserError("The response window is closed or a response already exists")
         _text(response, "response", 12000)
         if evidence_urls:
             _sources(evidence_urls)
@@ -247,11 +226,7 @@ class BevorProtocol(gl.Contract):
         if gl.message.sender_address != self.governor:
             raise gl.vm.UserError("Only the governor can settle a claim")
         audit = self._audit(audit_id)
-        if (
-            not claim_id
-            or claim_id != audit.claim_id
-            or verdict not in ("liable", "not_liable")
-        ):
+        if not claim_id or claim_id != audit.claim_id or verdict not in ("liable", "not_liable"):
             raise gl.vm.UserError("Invalid claim decision")
         if audit.outcome == verdict:
             return
@@ -322,9 +297,7 @@ class BevorProtocol(gl.Contract):
             "response": json.loads(audit.response) if audit.response else None,
             "claim_id": audit.claim_id,
             "claim_opened": int(audit.claim_opened),
-            "response_deadline": int(audit.claim_opened) + 86400
-            if audit.claim_id
-            else 0,
+            "response_deadline": int(audit.claim_opened) + 86400 if audit.claim_id else 0,
             "claim_deadline": int(audit.claim_deadline),
             "outcome": audit.outcome,
         }
